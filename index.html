@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <title>InstaSpam</title>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script><style type="text/css"></style>
+
+  <script type="text/javascript">
+  var keyTimer;
+  function keyup() {
+    if (keyTimer) clearTimeout(keyTimer);
+    
+    keyTimer = setTimeout(finishedTyping, 250);
+  }
+  
+  function finishedTyping()
+   {
+  	  var text = document.getElementById('txtChar').value;
+      if (!text) return;
+      
+      var runningTotal = 0;
+      for (var i=0; i < text.length; i++) {
+        var thisCharCode = text.charCodeAt(i);
+        runningTotal += thisCharCode;
+      };
+          	  
+  	  imgTag.setAttribute("class", 'hidden');
+  	  $('#textOverlay').html('');
+
+      getInstagramImage(runningTotal)
+       
+  }
+    
+    function getInstagramImage(number) {
+      var imgTag = document.getElementById('imgTag');
+      var result = document.getElementById('result');
+  	  result.innerHTML = number;
+  	  
+      var r = new XMLHttpRequest();
+      r.open("GET", 'https://api.instagram.com/v1/media/'+number+'?client_id=7bf15cbe69e343d89b95ed69a6bff3b0', true);
+      r.onreadystatechange = function () {
+        if (r.readyState != 4) {
+          if (r.status != 200) {
+            console.log('number failed: '+number);
+            getInstagramImage(number+1);
+            return;
+          }
+          if (r.responseText) {
+            var json = JSON.parse(r.responseText)
+            // console.log(json);
+        	  imgTag.src = json.data.images.standard_resolution.url
+        	}
+        }
+      };
+      r.send();
+    }
+    
+    function renderText() { 
+      var text = $('#txtChar').val();
+      $('#textOverlay').html(text);
+      
+      var imageHeight = $('#imgTag').height();
+  	  $('#image').css('height', imageHeight);
+  	  $('#image').css('width', $('#imgTag').width());
+      var textOverlay = $('#textOverlay');
+      
+      var fontSize = 100;
+      
+      while (textOverlay.outerHeight() > imageHeight) {
+        if (fontSize < 1) break;
+        
+        textOverlay.css('font-size', --fontSize+'px');
+      }
+    }
+  </script>
+
+  <link href='http://fonts.googleapis.com/css?family=Lilita+One' rel='stylesheet' type='text/css'>
+  
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  
+  <meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
+  
+</head>
+<body>
+  
+  <div id="wrapper">
+    
+    <div id="header">
+      
+      <div id="branding">
+      
+	<h1><span style="font-family: 'league_script_thileaguescript'; margin-left: 0.2em;">insta</span><br><span style="font-weight: bold; font-size: 120%">spam</span></h1>
+      
+      </div>
+    
+    </div>
+    
+    <div id="content">
+      
+      <input onkeypress="javascript:;" id="txtChar" onkeyup="javascript:keyup()" type="text" name="txtChar" placeholder="Type your spam here...">
+      
+      <div id="result"></div>
+	
+      <div id="info">
+	
+	?
+	
+	<p>Please copy a spam subject line from your inbox and paste it into the box.</p>
+      
+      </div>
+      
+      <div id="image" onclick='javascript: $("#textOverlay").toggleClass("white")'>
+        <p id="textOverlay"></p>
+        <img id="imgTag" onload='javascript:this.setAttribute("class", ""); renderText();' />
+      </div>
+            
+    </div>
+    
+    <div id="footer">
+      
+      By Fiona Chambers and Adam Howard.
+      
+      <br>
+      
+      Site design by <a href="http://www.robcostello.net">Rob Costello</a>.
+      
+    </div>
+
+  </div>
+
+</body></html>
